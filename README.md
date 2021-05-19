@@ -1,6 +1,6 @@
 Simple CRUD based ReactJs project.
 
-**Modules - **
+**Modules** -
 - Sign up
 - sign in
 - listing

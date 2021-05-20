@@ -15,6 +15,9 @@ import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import Input from '@material-ui/core/Input';
 import InputLabel from '@material-ui/core/InputLabel';
+import MuiAlert from '@material-ui/lab/Alert';
+import Snackbar from '@material-ui/core/Snackbar';
+import API from '../api/index';
 
 function Copyright() {
   return (
@@ -49,6 +52,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
 export default function SignUp() {
   
   const classes = useStyles();
@@ -58,11 +65,35 @@ export default function SignUp() {
     password:''
   } 
 
-
   let history = useHistory()
 
   const [values,setValues] = useState(initialFormData)
   const [errors,setErrors] = useState({})
+  const [open, setOpen] = useState(false)
+
+  const validate = () => {
+    if(!values.userName){
+      setErrors({userName: 'UserName required'})
+      return false
+    }
+    if(!values.email){
+      setErrors({email: 'email required'})
+      return false
+    }
+    if(!values.password){
+      setErrors({password: 'password required'})
+      return false
+    }
+    return true
+  }
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  }
 
   const handleChange = (event) => {
       setValues({
@@ -72,59 +103,35 @@ export default function SignUp() {
       setErrors({})
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
+
     e.preventDefault()
-    // validate()
-    // console.log('errors.userName',errors.userName);
-      const isEmpty = Object.values(values).every(x => (x === null || x === ''));
-      console.log('isEmpty', isEmpty);
-      if(isEmpty){
-       return setErrors({
-        userName : values.userName?'':'userName required',
-        email: values.email?'':'email required',
-        password: values.password?'':'password required'
-        //  ...errors,
-        // [errors]: temp
-      })
-      // console.log('errors---------------------', errors.userName);
-      // console.log('Boolean(errors.userName)', Boolean(errors.userName));
-      // return false
-    }
-    if(!values.userName){
-      return setErrors({userName: 'UserName required'})
-    }
-    if(!values.email){
-      return setErrors({email: 'email required'})
-    }
-    if(!values.password){
-      return setErrors({password: 'password required'})
-    }
-    // if(validate())
-    // if (!initialFormData.userName) {
-    //   console.log('eeeeeeeeeeeeeeeeeeeee');
-    //   setValues({ errorText: 'Invalid format: ###-###-####' })
-    //   console.log('setValue.errortext', initialFormData.errorText);
-    //   return false;
-    // }
+    const isValid = validate()
+    console.log('isValid', isValid);
+    if(isValid === true){
+    console.log('isValidaaaaa', isValid);
 
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: values.userName,
-        email: values.email,
-        password: values.password
-      })
-  };
-    console.log(values);
-    fetch('http://localhost:4000/api/users/create',requestOptions)
-    .then(response => response.json())
-    .then((data) => {
-        console.log('data',data)
-        history.push('/signIn')
-    })
-  };
+      const requestOptions = {
+        // method: 'POST',
+        // headers: { 'Content-Type': 'application/json' },
+        // body: JSON.stringify({
+          username: values.userName,
+          email: values.email,
+          password: values.password
+        // })
+    };
+      e.target.reset();
+      const response = await API.post('users/create',requestOptions)
+      console.log('response', response);
+      if(response.status){
+        setOpen(true);
+        setTimeout(()=>{
+          history.push('/signIn')
+        },1000)
+      }
+    }
 
+  }
 
   return (
     <Container component="main" maxWidth="xs">
@@ -136,19 +143,25 @@ export default function SignUp() {
         <Typography component="h1" variant="h5">
           Sign up 
         </Typography>
+        <Snackbar open={open} autoHideDuration={1000} onClose={handleClose}>
+          <Alert onClose={handleClose} severity="success">
+            Your user registration was successful!
+            You may now log-in.
+          </Alert>
+        </Snackbar>
         <form className={classes.form} onSubmit={handleSubmit} noValidate >
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
                 error={Boolean(errors.userName)}
                 helperText={errors.userName}
-                autoComplete="fname"
+                autoComplete="username"
                 name="userName"
                 variant="outlined"
                 required
                 fullWidth
                 id="userName"
-                label="UserName"
+                label="Username"
                 autoFocus
                 onChange={handleChange}
               />
@@ -172,11 +185,10 @@ export default function SignUp() {
                 required
                 fullWidth
                 id="email"
-                label="Email Address"
+                label="Email"
                 name="email"
                 autoComplete="email"
                 onChange={handleChange}
-
               />
             </Grid>
             <Grid item xs={12}>
@@ -192,7 +204,6 @@ export default function SignUp() {
                 id="password"
                 autoComplete="current-password"
                 onChange={handleChange}
-
               />
             </Grid>
             {/* <Grid item xs={12}>
@@ -225,5 +236,5 @@ export default function SignUp() {
         <Copyright />
       </Box>
     </Container>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{ useState } from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -12,6 +12,10 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
+import API from '../api/index';
+import { useHistory } from "react-router-dom"
+import MuiAlert from '@material-ui/lab/Alert';
+import Snackbar from '@material-ui/core/Snackbar';
 
 function Copyright() {
   return (
@@ -46,8 +50,72 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
 export default function SignIn() {
+  let history = useHistory()
+
   const classes = useStyles();
+
+  const [values,setValues] = useState({})
+  const [errors,setErrors] = useState({})
+  const [open, setOpen] = useState(false)
+
+
+  const validate = () => {
+    if(!values.email){
+      setErrors({email: 'email required'})
+      return false
+    }
+    if(!values.password){
+      setErrors({password: 'password required'})
+      return false
+    }
+    return true
+  }
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  }
+
+  const handleChange = (event) => {
+    setValues({
+      ...values,
+      [event.target.name]:event.target.value
+    })
+    setErrors({})
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const isValid = validate()
+    if(isValid === true){
+      console.log('values', values);
+      const requestOptions = {
+        // method: 'POST',
+        // headers: { 'Content-Type': 'application/json' },
+        // body: JSON.stringify({
+          email: values.email,
+          password: values.password
+        // })
+    };
+      e.target.reset();
+      const response = await API.post('users/login',requestOptions)
+      console.log('response', response);
+      if(response.status){
+        setOpen(true)
+        setTimeout(()=>{
+          history.push('/welcome')
+        },1000)
+      }
+    }
+  }
 
   return (
     <Container component="main" maxWidth="xs">
@@ -59,8 +127,15 @@ export default function SignIn() {
         <Typography component="h1" variant="h5">
           Sign in
         </Typography>
-        <form className={classes.form} noValidate>
+        <Snackbar open={open} autoHideDuration={1000} onClose={handleClose}>
+          <Alert onClose={handleClose} severity="success">
+            log-in successful!
+          </Alert>
+        </Snackbar>
+        <form className={classes.form} noValidate onSubmit={handleSubmit}>
           <TextField
+            error={Boolean(errors.email)}
+            helperText={errors.email}
             variant="outlined"
             margin="normal"
             required
@@ -70,8 +145,11 @@ export default function SignIn() {
             name="email"
             autoComplete="email"
             autoFocus
+            onChange={handleChange}
           />
           <TextField
+            error={Boolean(errors.password)}
+            helperText={errors.password}
             variant="outlined"
             margin="normal"
             required
@@ -81,6 +159,7 @@ export default function SignIn() {
             type="password"
             id="password"
             autoComplete="current-password"
+            onChange={handleChange}
           />
           <FormControlLabel
             control={<Checkbox value="remember" color="primary" />}

@@ -56,45 +56,13 @@ export default function SignUp() {
     userName:'',
     email:'',
     password:''
-    // errors:{}
   } 
 
-  
 
   let history = useHistory()
 
   const [values,setValues] = useState(initialFormData)
   const [errors,setErrors] = useState({})
-
-  const validate = (e) => {
-    console.log('dddddddddddddddd', !values);
-
-    let temp = {}
-    temp.userName = values.userName?'':'userName required'
-    temp.email = values.email?'':'email required'
-    temp.password = values.password?'':'password required'
-    // setErrors({
-    //   errors:''
-    // })
-      console.log('Object.values(temp).every(x => ', Object.values(values).every(x => x === ''))
-      console.log('values', values);
-      console.log('temp', temp);
-
-    if(Object.values(values).every(x => x === '') === true){
-    // return errors = temp
-      // return setErrors({...errors,[errors]:temp})
-      
-       setErrors({
-         ...errors,
-        errors: temp
-      })
-
-      // console.log('temp---------------------', temp);
-
-    }
-
-    // Object.values(temp).every(x => x == '')
-  }
 
   const handleChange = (event) => {
       setValues({
@@ -106,18 +74,31 @@ export default function SignUp() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if(validate())
-    console.log('errors.userName',errors.userName);
-
-    // if(!values.userName){
-    //   return setErrors({userName: 'UserName required'})
-    // }
-    // if(!values.email){
-    //   return setErrors({email: 'email required'})
-    // }
-    // if(!values.password){
-    //   return setErrors({password: 'password required'})
-    // }
+    // validate()
+    // console.log('errors.userName',errors.userName);
+      const isEmpty = Object.values(values).every(x => (x === null || x === ''));
+      console.log('isEmpty', isEmpty);
+      if(isEmpty){
+       return setErrors({
+        userName : values.userName?'':'userName required',
+        email: values.email?'':'email required',
+        password: values.password?'':'password required'
+        //  ...errors,
+        // [errors]: temp
+      })
+      // console.log('errors---------------------', errors.userName);
+      // console.log('Boolean(errors.userName)', Boolean(errors.userName));
+      // return false
+    }
+    if(!values.userName){
+      return setErrors({userName: 'UserName required'})
+    }
+    if(!values.email){
+      return setErrors({email: 'email required'})
+    }
+    if(!values.password){
+      return setErrors({password: 'password required'})
+    }
     // if(validate())
     // if (!initialFormData.userName) {
     //   console.log('eeeeeeeeeeeeeeeeeeeee');
@@ -153,19 +134,14 @@ export default function SignUp() {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Sign up
+          Sign up 
         </Typography>
         <form className={classes.form} onSubmit={handleSubmit} noValidate >
           <Grid container spacing={2}>
             <Grid item xs={12}>
-            
               <TextField
-                // error={Boolean(errors?.userName)}
-                // helperText= {errors?.userName}
-                // {...(errors["userName"] && { error: true, helperText: errors["userName"] })}
                 error={Boolean(errors.userName)}
                 helperText={errors.userName}
-                // helperText={errors.userName === "" ? 'Empty field!' : ' '}
                 autoComplete="fname"
                 name="userName"
                 variant="outlined"
